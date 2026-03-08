@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { login, register } from "../api/auth";
+import { login, register } from "../../api/auth";
 import "./AuthModal.css";
 
+
+// как будто модалка мне кажется кринж и ее можно делитнуть (deprecadet)
 export default function AuthModal({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({

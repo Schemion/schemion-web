@@ -1,26 +1,14 @@
-import { useState } from "react";
-import AuthModal from "./components/AuthModal";
-import "./App.css";
+import { BrowserRouter } from "react-router-dom"
+import Router from "./router/router"
+import Navbar from "./components/Navbar/Navbar"
 
-export default function App() {
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-
+function App() {
   return (
-    <div className="app-container">
-      <h1 className="app-title">Schemion</h1>
-      <p>Тут точно будет реализация.</p>
-
-      <button
-        className="app-button"
-        onClick={() => setIsAuthOpen(true)}
-      >
-        Авторизация
-      </button>
-
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-      />
-    </div>
-  );
+    <BrowserRouter>
+      <Navbar />
+      <Router />
+    </BrowserRouter>
+  )
 }
+
+export default App
