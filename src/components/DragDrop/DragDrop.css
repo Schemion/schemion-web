@@ -1,0 +1,16 @@
+.drop-zone {
+  border: 2px dashed #999;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.drop-zone.active {
+  border-color: #0077ff;
+  background: #f0f6ff;
+}
+
+.drop-zone input {
+  margin-top: 15px;
+}
