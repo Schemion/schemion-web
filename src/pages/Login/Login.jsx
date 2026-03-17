@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { loginRequest } from "../../api/auth"
 import "./Login.css"
 
-export default function Login() {
+export default function Login({ onAuth }) {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -13,7 +13,11 @@ export default function Login() {
     e.preventDefault()
     try {
       const res = await loginRequest(email, password)
-      localStorage.setItem("token", res.data.access_token)
+      if (onAuth) {
+        onAuth(res.data.access_token)
+      } else {
+        localStorage.setItem("token", res.data.access_token)
+      }
       navigate("/")
     } catch (err) {
       setError("Invalid email or password")
@@ -21,29 +25,40 @@ export default function Login() {
   }
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleLogin}>
-        <h2>Login</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <div className="page login-page">
+      <div className="login-card card">
+        <div className="login-header">
+          <h1>Welcome back</h1>
+          <p>Sign in to manage models, tasks, and inference runs.</p>
+        </div>
+        <form className="login-form" onSubmit={handleLogin}>
+          <label className="field">
+            <span className="field-label">Email</span>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <label className="field">
+            <span className="field-label">Password</span>
+            <input
+              type="password"
+              placeholder="passw"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
 
-        {error && <p className="error">{error}</p>}
+          {error && <p className="error">{error}</p>}
 
-        <button type="submit">
-          Login
-        </button>
-      </form>
+          <button type="submit" className="btn primary">
+            Login
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

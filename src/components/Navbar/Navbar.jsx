@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import "./Navbar.css"
 
-export default function Navbar() {
-  const token = localStorage.getItem("token")
+export default function Navbar({ token, onLogout }) {
+  const navigate = useNavigate()
 
   const logout = () => {
-    localStorage.removeItem("token")
-    window.location.href = "/"
+    if (onLogout) {
+      onLogout()
+    }
+    navigate("/")
   }
 
   return (
@@ -19,6 +21,9 @@ export default function Navbar() {
       <div className="navbar-center">
         <Link to="/inference" className="nav-link">
           Inference
+        </Link>
+        <Link to="/compare" className="nav-link">
+          Compare
         </Link>
         <Link to="/training" className="nav-link">
           Training

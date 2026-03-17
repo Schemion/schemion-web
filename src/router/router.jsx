@@ -2,20 +2,20 @@ import { Routes, Route } from "react-router-dom"
 
 import Home from "../pages/Home/Home"
 import Inference from "../pages/Inference/Inference"
+import Compare from "../pages/Compare/Compare"
 import Training from "../pages/Training/Training"
 import Tasks from "../pages/Tasks/Tasks"
 import Login from "../pages/Login/Login"
 
-export default function Router() {
-    const token = localStorage.getItem("token")
-
+export default function Router({ token, onAuth }) {
     return (
         <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/inference" element={token ? <Inference/> : <Login/>} />
-        <Route path="/training" element={token ? <Training/> : <Login/>} />
-        <Route path="/tasks" element={token ? <Tasks/> : <Login/>} />
+        <Route path="/login" element={<Login onAuth={onAuth} />} />
+        <Route path="/inference" element={token ? <Inference/> : <Login onAuth={onAuth} />} />
+        <Route path="/compare" element={token ? <Compare/> : <Login onAuth={onAuth} />} />
+        <Route path="/training" element={token ? <Training/> : <Login onAuth={onAuth} />} />
+        <Route path="/tasks" element={token ? <Tasks/> : <Login onAuth={onAuth} />} />
         </Routes>
     )
 }

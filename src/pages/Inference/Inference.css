@@ -1,47 +1,84 @@
 .inference-page {
+  gap: 28px;
+}
 
-  max-width: 900px;
+.inference-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
 
-  margin: auto;
-
-  padding: 40px;
-
+.inference-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .model-select {
-
-  margin-bottom: 20px;
-
-  padding: 10px;
-
-  width: 300px;
-
+  width: 100%;
 }
 
-.preview img {
-
-  max-width: 100%;
-
-  margin-top: 20px;
-
-  border-radius: 10px;
-
+.inference-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-button {
+.result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
 
-  margin-top: 20px;
+.result-card a {
+  color: var(--accent);
+  font-weight: 600;
+}
 
-  padding: 12px 20px;
+.inference-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  border: none;
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  background: #0077ff;
+.preview-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
 
-  color: white;
+.preview-area {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-muted);
+  padding: 20px;
+}
 
-  border-radius: 6px;
+.preview-area img {
+  border-radius: 12px;
+}
 
-  cursor: pointer;
+.preview-empty {
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 280px;
+}
 
+@media (max-width: 960px) {
+  .inference-grid {
+    grid-template-columns: 1fr;
+  }
 }

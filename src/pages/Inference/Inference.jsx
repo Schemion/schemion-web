@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import DragDrop from "../../components/DragDrop/DragDrop"
 import DetectionCanvas from "../../components/DetectionCanvas/DetectionCanvas"
@@ -10,7 +10,7 @@ import "./Inference.css"
 
 export default function Inference() {
   const [models, setModels] = useState([])
-  const [selectedModel, setSelectedModel] = useState(null)
+  const [selectedModel, setSelectedModel] = useState("")
 
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -19,10 +19,27 @@ export default function Inference() {
 
   const [resultUrl, setResultUrl] = useState(null)
   const [predictions, setPredictions] = useState(null)
+  const intervalRef = useRef(null)
 
   useEffect(() => {
     loadModels()
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview)
+      }
+    }
+  }, [preview])
 
   const loadModels = async () => {
     try {
@@ -33,11 +50,31 @@ export default function Inference() {
     }
   }
 
-  const handleFile = (file) => {
-    setFile(file)
-    const url = URL.createObjectURL(file)
+  const handleFile = (selectedFile) => {
+    if (preview) {
+      URL.revokeObjectURL(preview)
+    }
+    setFile(selectedFile)
+    const url = URL.createObjectURL(selectedFile)
     setPreview(url)
     setPredictions(null)
+    setResultUrl(null)
+  }
+
+  const clearAll = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview)
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    setFile(null)
+    setPreview(null)
+    setPredictions(null)
+    setResultUrl(null)
+    setSelectedModel("")
+    setLoading(false)
   }
 
   const startInference = async () => {
@@ -59,7 +96,11 @@ export default function Inference() {
   }
 
   const pollTask = (taskId) => {
-    const interval = setInterval(async () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+
+    intervalRef.current = setInterval(async () => {
       try {
         const task = await getTask(taskId)
 
@@ -67,62 +108,113 @@ export default function Inference() {
           await loadResult(task.output_url)
           setResultUrl(task.output_url)
           setLoading(false)
-          clearInterval(interval)
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
         }
 
         if (task.status === "failed") {
-          clearInterval(interval)
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
           setLoading(false)
         }
       } catch (err) {
         console.error(err)
-        clearInterval(interval)
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
       }
-    }, 10000)
+    }, 8000)
   }
 
+  const selectedModelName = models.find(
+    model => String(model.id) === String(selectedModel)
+  )?.name
+
   return (
-    <div className="inference-page">
-      <h1>Inference</h1>
-      <select
-        className="model-select"
-        onChange={(e) => setSelectedModel(e.target.value)}
-      >
-        <option value="">Select model</option>
-        {models.map(model => (
-          <option key={model.id} value={model.id}>
-            {model.name}
-          </option>
-        ))}
-      </select>
-      <DragDrop onFileSelect={handleFile} />
-      {preview && (
-        <div className="preview">
-          {predictions ? (
-            <DetectionCanvas
-              imageSrc={preview}
-              predictions={predictions}
-            />
-          ) : (
-            <img src={preview} alt="preview" />
+    <div className="page inference-page">
+      <div className="page-header">
+        <h1>Inference</h1>
+        <p>
+          Choose a model, upload an image, and run inference with a clean preview
+          of detections.
+        </p>
+      </div>
+
+      <div className="inference-grid">
+        <div className="card inference-controls">
+          <div className="field">
+            <span className="field-label">Model</span>
+            <select
+              className="model-select"
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+            >
+              <option value="">Select model</option>
+              {models.map(model => (
+                <option key={model.id} value={String(model.id)}>
+                  {model.name}
+                </option>
+              ))}
+            </select>
+            {selectedModelName && (
+              <span className="helper-text">Selected: {selectedModelName}</span>
+            )}
+          </div>
+
+          <div className="field">
+            <span className="field-label">Image</span>
+            <DragDrop onFileSelect={handleFile} />
+            {file && (
+              <span className="helper-text">File: {file.name}</span>
+            )}
+          </div>
+
+          <div className="inference-actions">
+            <button
+              className="btn primary"
+              onClick={startInference}
+              disabled={!file || !selectedModel || loading}
+            >
+              {loading ? "Processing..." : "Run inference"}
+            </button>
+            <button
+              className="btn ghost"
+              onClick={clearAll}
+              disabled={loading}
+            >
+              Reset
+            </button>
+          </div>
+
+          {resultUrl && (
+            <div className="result-card">
+              <span className="field-label">Result JSON</span>
+              <a href={resultUrl} target="_blank" rel="noreferrer">
+                Open raw result
+              </a>
+            </div>
           )}
         </div>
-      )}
-      <button
-        onClick={startInference}
-        disabled={!file || !selectedModel || loading}
-      >
-        {loading ? "Processing..." : "Run inference"}
-      </button>
 
-      {resultUrl && (
-        <div className="result">
-          <h3>Result JSON</h3>
-          <a href={resultUrl} target="_blank">
-            Open raw result
-          </a>
+        <div className="card inference-preview">
+          <div className="preview-header">
+            <h3>Preview</h3>
+            {loading && <span className="status-pill running">Running</span>}
+          </div>
+          <div className="preview-area">
+            {preview ? (
+              predictions ? (
+                <DetectionCanvas imageSrc={preview} predictions={predictions} />
+              ) : (
+                <img src={preview} alt="preview" />
+              )
+            ) : (
+              <div className="preview-empty">
+                Upload an image to see the preview here.
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

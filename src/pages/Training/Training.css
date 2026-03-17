@@ -1,0 +1,14 @@
+.training-empty {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.training-empty h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+}
+
+.training-empty p {
+  margin: 0;
+  color: var(--text-muted);
+}

@@ -42,9 +42,12 @@ export default function DragDrop({ onFileSelect }) {
       onDragOver={handleDrag}
       onDragLeave={handleLeave}
     >
-      <p>Drag & Drop image here</p>
-
+      <div className="drop-zone-content">
+        <p className="drop-title">Drag & drop your image</p>
+        <span className="drop-subtitle">or click to browse files</span>
+      </div>
       <input
+        className="drop-input"
         type="file"
         accept="image/*"
         onChange={handleFileInput}

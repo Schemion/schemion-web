@@ -14,3 +14,8 @@ export const getTask = async (taskId) => {
   const res = await api.get(`/tasks/${taskId}`)
   return res.data
 }
+
+export const getTasks = async() => {
+  const res = await api.get('/tasks/');
+  return res.data; 
+}
