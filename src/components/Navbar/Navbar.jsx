@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom"
 import "./Navbar.css"
 
-export default function Navbar({ token, onLogout }) {
+export default function Navbar({ token, onLogout, theme, onToggleTheme }) {
   const navigate = useNavigate()
 
   const logout = () => {
@@ -33,6 +33,15 @@ export default function Navbar({ token, onLogout }) {
         </Link>
       </div>
       <div className="navbar-right">
+        {onToggleTheme && (
+          <button
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            aria-pressed={theme === "dark"}
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
+        )}
         {token ? (
           <button className="logout-btn" onClick={logout}>
             Logout

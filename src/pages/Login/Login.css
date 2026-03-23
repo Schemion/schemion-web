@@ -33,3 +33,30 @@
   font-size: 14px;
   margin: 0;
 }
+
+.success {
+  color: var(--success);
+  font-size: 14px;
+  margin: 0;
+}
+
+.login-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.login-switch button {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.login-switch button:hover {
+  color: var(--accent-strong);
+}

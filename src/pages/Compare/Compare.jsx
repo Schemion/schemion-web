@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import DragDrop from "../../components/DragDrop/DragDrop"
 import DetectionCanvas from "../../components/DetectionCanvas/DetectionCanvas"
@@ -7,6 +7,112 @@ import { getModels } from "../../api/models"
 import { createInferenceTask, getTask } from "../../api/tasks"
 
 import "./Compare.css"
+
+const MODEL_COLORS = {
+  a: "#2563eb",
+  b: "#dc2626"
+}
+
+const MERGE_IOU_THRESHOLD = 0.5
+
+const getConfidence = (pred) => {
+  if (!pred) return 0
+  if (typeof pred.confidence === "number") return pred.confidence
+  if (typeof pred.score === "number") return pred.score
+  return 0
+}
+
+const getClassKey = (pred) => {
+  if (!pred) return ""
+  if (pred.class !== undefined && pred.class !== null) return String(pred.class).toLowerCase()
+  if (pred.label !== undefined && pred.label !== null) return String(pred.label).toLowerCase()
+  if (pred.name !== undefined && pred.name !== null) return String(pred.name).toLowerCase()
+  return ""
+}
+
+const normalizeBox = (bbox) => {
+  if (!Array.isArray(bbox) || bbox.length < 4) return null
+  const [x1, y1, x2, y2] = bbox.map(Number)
+  if ([x1, y1, x2, y2].some((value) => Number.isNaN(value))) return null
+  return [x1, y1, x2, y2]
+}
+
+const calculateIoU = (boxA, boxB) => {
+  if (!boxA || !boxB) return 0
+  const [ax1, ay1, ax2, ay2] = boxA
+  const [bx1, by1, bx2, by2] = boxB
+
+  const interWidth = Math.max(0, Math.min(ax2, bx2) - Math.max(ax1, bx1))
+  const interHeight = Math.max(0, Math.min(ay2, by2) - Math.max(ay1, by1))
+  const interArea = interWidth * interHeight
+
+  const areaA = Math.max(0, ax2 - ax1) * Math.max(0, ay2 - ay1)
+  const areaB = Math.max(0, bx2 - bx1) * Math.max(0, by2 - by1)
+  const unionArea = areaA + areaB - interArea
+
+  if (unionArea <= 0) return 0
+  return interArea / unionArea
+}
+
+const mergePredictions = (predsA, predsB) => {
+  if (!Array.isArray(predsA) || !Array.isArray(predsB)) return []
+
+  const pairs = []
+  predsA.forEach((predA, indexA) => {
+    const boxA = normalizeBox(predA.bbox)
+    if (!boxA) return
+
+    predsB.forEach((predB, indexB) => {
+      const boxB = normalizeBox(predB.bbox)
+      if (!boxB) return
+
+      const classA = getClassKey(predA)
+      const classB = getClassKey(predB)
+
+      if (classA && classB && classA !== classB) return
+
+      const iou = calculateIoU(boxA, boxB)
+      if (iou >= MERGE_IOU_THRESHOLD) {
+        pairs.push({ indexA, indexB, iou })
+      }
+    })
+  })
+
+  pairs.sort((a, b) => b.iou - a.iou)
+
+  const usedA = new Set()
+  const usedB = new Set()
+  const merged = []
+
+  pairs.forEach(({ indexA, indexB }) => {
+    if (usedA.has(indexA) || usedB.has(indexB)) return
+    usedA.add(indexA)
+    usedB.add(indexB)
+
+    const predA = predsA[indexA]
+    const predB = predsB[indexB]
+
+    if (getConfidence(predA) >= getConfidence(predB)) {
+      merged.push({ ...predA, source: "a" })
+    } else {
+      merged.push({ ...predB, source: "b" })
+    }
+  })
+
+  predsA.forEach((predA, indexA) => {
+    if (!usedA.has(indexA)) {
+      merged.push({ ...predA, source: "a" })
+    }
+  })
+
+  predsB.forEach((predB, indexB) => {
+    if (!usedB.has(indexB)) {
+      merged.push({ ...predB, source: "b" })
+    }
+  })
+
+  return merged
+}
 
 export default function Compare() {
   const [models, setModels] = useState([])
@@ -184,6 +290,15 @@ export default function Compare() {
     model => String(model.id) === String(modelB)
   )?.name
   const readyToShow = results.a && results.b
+  const mergedPredictions = useMemo(() => {
+    if (!readyToShow) return []
+    return mergePredictions(results.a, results.b)
+  }, [readyToShow, results.a, results.b])
+
+  const getMergedColor = (pred) => {
+    if (pred?.source === "b") return MODEL_COLORS.b
+    return MODEL_COLORS.a
+  }
 
   const statusClass = (value) => {
     if (value === "succeeded") return "success"
@@ -334,6 +449,41 @@ export default function Compare() {
                   Open raw result
                 </a>
               )}
+            </div>
+
+            <div className="compare-result compare-merged">
+              <h4>Combined (higher confidence)</h4>
+              <div className="compare-legend">
+                <span className="legend-item">
+                  <span
+                    className="legend-swatch"
+                    style={{ backgroundColor: MODEL_COLORS.a }}
+                  />
+                  {modelAName || "Model A"}
+                </span>
+                <span className="legend-item">
+                  <span
+                    className="legend-swatch"
+                    style={{ backgroundColor: MODEL_COLORS.b }}
+                  />
+                  {modelBName || "Model B"}
+                </span>
+              </div>
+              <div className="compare-preview">
+                {preview ? (
+                  readyToShow ? (
+                    <DetectionCanvas
+                      imageSrc={preview}
+                      predictions={mergedPredictions}
+                      getColor={getMergedColor}
+                    />
+                  ) : (
+                    <span className="compare-waiting">Waiting for both tasks...</span>
+                  )
+                ) : (
+                  <span className="compare-waiting">Upload an image first.</span>
+                )}
+              </div>
             </div>
           </div>
         </div>

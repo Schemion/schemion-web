@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(246, 248, 255, 0.85);
+  background: var(--navbar-bg);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
 }
@@ -16,6 +16,7 @@
 
 .navbar-right {
   justify-content: flex-end;
+  gap: 12px;
 }
 
 .navbar {
@@ -56,9 +57,26 @@
   padding: 8px 16px;
   border-radius: 999px;
   background: var(--text-main);
-  color: white;
+  color: var(--surface);
   font-weight: 600;
   font-size: 13px;
+}
+
+.theme-toggle {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .logout-btn {

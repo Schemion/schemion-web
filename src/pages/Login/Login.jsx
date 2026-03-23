@@ -1,16 +1,51 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { loginRequest } from "../../api/auth"
+import { loginRequest, registerRequest } from "../../api/auth"
 import "./Login.css"
 
 export default function Login({ onAuth }) {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError("")
+    setSuccess("")
+
+    if (isRegister) {
+      if (password !== confirmPassword) {
+        setError("Passwords do not match")
+        return
+      }
+
+      try {
+        const res = await registerRequest(email, password)
+        const token = res?.data?.access_token
+        if (token) {
+          if (onAuth) {
+            onAuth(token)
+          } else {
+            localStorage.setItem("token", token)
+          }
+          navigate("/")
+          return
+        }
+
+        setSuccess("Account created. Please sign in.")
+        setIsRegister(false)
+        setConfirmPassword("")
+        return
+      } catch (err) {
+        setError("Could not create account")
+        return
+      }
+    }
+
     try {
       const res = await loginRequest(email, password)
       if (onAuth) {
@@ -24,14 +59,25 @@ export default function Login({ onAuth }) {
     }
   }
 
+  const toggleMode = () => {
+    setIsRegister(prev => !prev)
+    setError("")
+    setSuccess("")
+    setConfirmPassword("")
+  }
+
   return (
     <div className="page login-page">
       <div className="login-card card">
         <div className="login-header">
-          <h1>Welcome back</h1>
-          <p>Sign in to manage models, tasks, and inference runs.</p>
+          <h1>{isRegister ? "Create account" : "Welcome back"}</h1>
+          <p>
+            {isRegister
+              ? "Register to manage models, tasks, and inference runs."
+              : "Sign in to manage models, tasks, and inference runs."}
+          </p>
         </div>
-        <form className="login-form" onSubmit={handleLogin}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <label className="field">
             <span className="field-label">Email</span>
             <input
@@ -46,17 +92,39 @@ export default function Login({ onAuth }) {
             <span className="field-label">Password</span>
             <input
               type="password"
-              placeholder="passw"
+              placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
 
+          {isRegister && (
+            <label className="field">
+              <span className="field-label">Repeat password</span>
+              <input
+                type="password"
+                placeholder="Enter password again"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </label>
+          )}
+
           {error && <p className="error">{error}</p>}
+          {success && <p className="success">{success}</p>}
 
           <button type="submit" className="btn primary">
-            Login
+            {isRegister ? "Register" : "Login"}
           </button>
+
+          <div className="login-switch">
+            <span>
+              {isRegister ? "Already have an account?" : "No account yet?"}
+            </span>
+            <button type="button" onClick={toggleMode}>
+              {isRegister ? "Login" : "Register"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

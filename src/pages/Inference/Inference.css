@@ -56,6 +56,12 @@
   font-family: var(--font-display);
 }
 
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .preview-area {
   min-height: 280px;
   display: flex;

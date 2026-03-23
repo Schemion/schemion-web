@@ -20,6 +20,7 @@ export default function Inference() {
   const [resultUrl, setResultUrl] = useState(null)
   const [predictions, setPredictions] = useState(null)
   const intervalRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
     loadModels()
@@ -129,6 +130,26 @@ export default function Inference() {
     model => String(model.id) === String(selectedModel)
   )?.name
 
+  const downloadAnnotatedImage = () => {
+    const compositeCanvas = canvasRef.current?.getCompositeCanvas?.()
+    if (!compositeCanvas) return
+
+    const baseName = file?.name
+      ? file.name.replace(/\.[^.]+$/, "")
+      : "inference-result"
+    const filename = `${baseName}-detections.png`
+
+    compositeCanvas.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = filename
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    }, "image/png")
+  }
+
   return (
     <div className="page inference-page">
       <div className="page-header">
@@ -198,12 +219,25 @@ export default function Inference() {
         <div className="card inference-preview">
           <div className="preview-header">
             <h3>Preview</h3>
-            {loading && <span className="status-pill running">Running</span>}
+            <div className="preview-actions">
+              {loading && <span className="status-pill running">Running</span>}
+              <button
+                className="btn ghost"
+                onClick={downloadAnnotatedImage}
+                disabled={!predictions}
+              >
+                Download annotated
+              </button>
+            </div>
           </div>
           <div className="preview-area">
             {preview ? (
               predictions ? (
-                <DetectionCanvas imageSrc={preview} predictions={predictions} />
+                <DetectionCanvas
+                  ref={canvasRef}
+                  imageSrc={preview}
+                  predictions={predictions}
+                />
               ) : (
                 <img src={preview} alt="preview" />
               )
