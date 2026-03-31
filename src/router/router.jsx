@@ -6,6 +6,7 @@ import Compare from "../pages/Compare/Compare"
 import Training from "../pages/Training/Training"
 import Tasks from "../pages/Tasks/Tasks"
 import Login from "../pages/Login/Login"
+import Library from "../pages/Library/Library"
 
 export default function Router({ token, onAuth }) {
     return (
@@ -15,6 +16,7 @@ export default function Router({ token, onAuth }) {
         <Route path="/inference" element={token ? <Inference/> : <Login onAuth={onAuth} />} />
         <Route path="/compare" element={token ? <Compare/> : <Login onAuth={onAuth} />} />
         <Route path="/training" element={token ? <Training/> : <Login onAuth={onAuth} />} />
+        <Route path="/library" element={token ? <Library/> : <Login onAuth={onAuth} />} />
         <Route path="/tasks" element={token ? <Tasks/> : <Login onAuth={onAuth} />} />
         </Routes>
     )
