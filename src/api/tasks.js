@@ -10,6 +10,19 @@ export const createInferenceTask = async (file, modelId) => {
   return res.data
 }
 
+export const createTrainingTask = async (modelId, datasetId, imageSize, numEpochs, name) => {
+  const formData = new FormData()
+
+  formData.append("model_id", modelId)
+  formData.append("dataset_id", datasetId)
+  formData.append("image_size", imageSize)
+  formData.append("num_epochs", numEpochs)
+  formData.append("name", name)
+
+  const res = await api.post("/tasks/create/training", formData)
+  return res.data
+}
+
 export const getTask = async (taskId) => {
   const res = await api.get(`/tasks/${taskId}`)
   return res.data
