@@ -114,6 +114,76 @@ const mergePredictions = (predsA, predsB) => {
   return merged
 }
 
+const extractPredictions = (payload) => {
+  if (Array.isArray(payload?.predictions)) return payload.predictions
+  if (Array.isArray(payload?.results)) return payload.results
+  if (Array.isArray(payload)) return payload
+  return []
+}
+
+const summarizePredictions = (preds) => {
+  const summary = {
+    count: 0,
+    avgConfidence: 0,
+    classes: {}
+  }
+
+  if (!Array.isArray(preds) || preds.length === 0) return summary
+
+  let confidenceSum = 0
+  let confidenceCount = 0
+
+  preds.forEach((pred) => {
+    summary.count += 1
+    const classKey = getClassKey(pred) || "unknown"
+    summary.classes[classKey] = (summary.classes[classKey] || 0) + 1
+
+    const confidence = getConfidence(pred)
+    if (Number.isFinite(confidence) && confidence > 0) {
+      confidenceSum += confidence
+      confidenceCount += 1
+    }
+  })
+
+  summary.avgConfidence = confidenceCount > 0 ? confidenceSum / confidenceCount : 0
+  return summary
+}
+
+const buildClassDiffs = (summaryA, summaryB) => {
+  const classes = new Set([
+    ...Object.keys(summaryA.classes || {}),
+    ...Object.keys(summaryB.classes || {})
+  ])
+
+  return Array.from(classes).map((className) => {
+    const countA = summaryA.classes?.[className] || 0
+    const countB = summaryB.classes?.[className] || 0
+    return {
+      className,
+      countA,
+      countB,
+      delta: countA - countB
+    }
+  }).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+}
+
+const formatScore = (value) => {
+  if (!Number.isFinite(value) || value <= 0) return "-"
+  const digits = value <= 1 ? 3 : 2
+  return value.toFixed(digits)
+}
+
+const stringifyJson = (value, limit = 6000) => {
+  if (value === null || value === undefined) return "-"
+  try {
+    const json = JSON.stringify(value, null, 2)
+    if (json.length <= limit) return json
+    return `${json.slice(0, limit)}\n... trimmed (${json.length - limit} more chars)`
+  } catch (err) {
+    return String(value)
+  }
+}
+
 export default function Compare() {
   const [models, setModels] = useState([])
   const [modelA, setModelA] = useState("")
@@ -128,6 +198,7 @@ export default function Compare() {
   const [results, setResults] = useState({ a: null, b: null })
   const [resultUrls, setResultUrls] = useState({ a: null, b: null })
   const [status, setStatus] = useState({ a: "idle", b: "idle" })
+  const [rawResults, setRawResults] = useState({ a: null, b: null })
 
   const intervalRef = useRef(null)
   const loadedRef = useRef({ a: false, b: false })
@@ -168,6 +239,7 @@ export default function Compare() {
     setResults({ a: null, b: null })
     setResultUrls({ a: null, b: null })
     setStatus({ a: "idle", b: "idle" })
+    setRawResults({ a: null, b: null })
     loadedRef.current = { a: false, b: false }
   }
 
@@ -184,6 +256,7 @@ export default function Compare() {
     setResults({ a: null, b: null })
     setResultUrls({ a: null, b: null })
     setStatus({ a: "idle", b: "idle" })
+    setRawResults({ a: null, b: null })
     setModelA("")
     setModelB("")
     setError("")
@@ -203,6 +276,7 @@ export default function Compare() {
     setResults({ a: null, b: null })
     setResultUrls({ a: null, b: null })
     setStatus({ a: "queued", b: "queued" })
+    setRawResults({ a: null, b: null })
     loadedRef.current = { a: false, b: false }
 
     try {
@@ -221,7 +295,7 @@ export default function Compare() {
   const loadResult = async (url) => {
     const res = await fetch(url)
     const data = await res.json()
-    return data.predictions
+    return data
   }
 
   const handleTaskUpdate = async (task, key) => {
@@ -229,10 +303,12 @@ export default function Compare() {
       setStatus(prev => ({ ...prev, [key]: "succeeded" }))
 
       if (!loadedRef.current[key]) {
-        const predictions = await loadResult(task.output_url)
+        const payload = await loadResult(task.output_url)
+        const predictions = extractPredictions(payload)
         loadedRef.current[key] = true
         setResults(prev => ({ ...prev, [key]: predictions }))
         setResultUrls(prev => ({ ...prev, [key]: task.output_url }))
+        setRawResults(prev => ({ ...prev, [key]: payload }))
       }
       return
     }
@@ -294,6 +370,17 @@ export default function Compare() {
     if (!readyToShow) return []
     return mergePredictions(results.a, results.b)
   }, [readyToShow, results.a, results.b])
+
+  const comparison = useMemo(() => {
+    if (!readyToShow) return null
+    const summaryA = summarizePredictions(results.a)
+    const summaryB = summarizePredictions(results.b)
+    const classDiffs = buildClassDiffs(summaryA, summaryB).slice(0, 8)
+    return { summaryA, summaryB, classDiffs }
+  }, [readyToShow, results.a, results.b])
+
+  const jsonA = useMemo(() => stringifyJson(rawResults.a), [rawResults.a])
+  const jsonB = useMemo(() => stringifyJson(rawResults.b), [rawResults.b])
 
   const getMergedColor = (pred) => {
     if (pred?.source === "b") return MODEL_COLORS.b
@@ -486,6 +573,87 @@ export default function Compare() {
               </div>
             </div>
           </div>
+
+          {readyToShow && (
+            <div className="compare-json">
+              <div className="compare-json-header">
+                <h4>JSON comparison</h4>
+                <span className="helper-text">Summary is based on prediction arrays.</span>
+              </div>
+
+              {comparison && (
+                <div className="compare-json-stats">
+                  <div className="compare-json-card">
+                    <span className="compare-json-label">{modelAName || "Model A"} predictions</span>
+                    <span className="compare-json-value">{comparison.summaryA.count}</span>
+                    <span className="compare-json-meta">
+                      Avg conf: {formatScore(comparison.summaryA.avgConfidence)}
+                    </span>
+                  </div>
+                  <div className="compare-json-card">
+                    <span className="compare-json-label">{modelBName || "Model B"} predictions</span>
+                    <span className="compare-json-value">{comparison.summaryB.count}</span>
+                    <span className="compare-json-meta">
+                      Avg conf: {formatScore(comparison.summaryB.avgConfidence)}
+                    </span>
+                  </div>
+                  <div className="compare-json-card">
+                    <span className="compare-json-label">Delta (A - B)</span>
+                    <span className="compare-json-value">
+                      {comparison.summaryA.count - comparison.summaryB.count}
+                    </span>
+                    <span className="compare-json-meta">
+                      Classes: {Object.keys(comparison.summaryA.classes).length} vs {Object.keys(comparison.summaryB.classes).length}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {comparison?.classDiffs?.length > 0 && (
+                <div className="compare-json-diff">
+                  <div className="compare-json-diff-title">Top class differences</div>
+                  <div className="compare-json-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Class</th>
+                          <th>{modelAName || "A"}</th>
+                          <th>{modelBName || "B"}</th>
+                          <th>Delta</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {comparison.classDiffs.map((row) => (
+                          <tr key={row.className}>
+                            <td>{row.className}</td>
+                            <td>{row.countA}</td>
+                            <td>{row.countB}</td>
+                            <td className={`compare-json-delta ${row.delta >= 0 ? "positive" : "negative"}`}>
+                              {row.delta >= 0 ? `+${row.delta}` : row.delta}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <details className="compare-json-details">
+                <summary>Show raw JSON</summary>
+                <div className="compare-json-grid">
+                  <div className="compare-json-panel">
+                    <div className="compare-json-title">{modelAName || "Model A"} JSON</div>
+                    <pre className="compare-json-pre">{jsonA}</pre>
+                  </div>
+                  <div className="compare-json-panel">
+                    <div className="compare-json-title">{modelBName || "Model B"} JSON</div>
+                    <pre className="compare-json-pre">{jsonB}</pre>
+                  </div>
+                </div>
+              </details>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -17,6 +17,32 @@ const METRIC_COLUMNS = [
   { label: "Val cls", key: "val/cls_loss" }
 ]
 
+const METRIC_CHARTS = [
+  {
+    title: "Precision vs Recall",
+    lines: [
+      { label: "Precision", key: "metrics/precision(B)", className: "a" },
+      { label: "Recall", key: "metrics/recall(B)", className: "b" }
+    ]
+  },
+  {
+    title: "mAP trends",
+    lines: [
+      { label: "mAP50", key: "metrics/mAP50(B)", className: "a" },
+      { label: "mAP50-95", key: "metrics/mAP50-95(B)", className: "c" }
+    ]
+  },
+  {
+    title: "Loss curves",
+    lines: [
+      { label: "Train box", key: "train/box_loss", className: "a" },
+      { label: "Train cls", key: "train/cls_loss", className: "b" },
+      { label: "Val box", key: "val/box_loss", className: "c" },
+      { label: "Val cls", key: "val/cls_loss", className: "d" }
+    ]
+  }
+]
+
 const normalizeList = (value) => {
   if (Array.isArray(value)) return value
   if (Array.isArray(value?.items)) return value.items
@@ -52,6 +78,55 @@ const parseMetrics = (payload) => {
     }
   }
   return payload
+}
+
+const toNumber = (value) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
+}
+
+const buildChartData = (epochs, lines) => {
+  if (!Array.isArray(epochs) || epochs.length === 0) return null
+
+  const preparedLines = lines.map((line) => {
+    const values = epochs.map((epoch, index) => {
+      const value = toNumber(epoch?.[line.key])
+      if (value === null) return null
+      return { index, value }
+    }).filter(Boolean)
+    return { ...line, values }
+  }).filter((line) => line.values.length > 0)
+
+  if (preparedLines.length === 0) return null
+
+  const allValues = preparedLines.flatMap((line) => line.values.map((point) => point.value))
+  const minValue = Math.min(...allValues)
+  const maxValue = Math.max(...allValues)
+  const range = maxValue - minValue || 1
+
+  const width = 100
+  const height = 40
+  const paddingX = 4
+  const paddingY = 4
+  const usableWidth = width - paddingX * 2
+  const usableHeight = height - paddingY * 2
+  const totalPoints = Math.max(epochs.length - 1, 1)
+
+  const scaleX = (index) => paddingX + (index / totalPoints) * usableWidth
+  const scaleY = (value) => paddingY + (1 - (value - minValue) / range) * usableHeight
+
+  const linesWithPoints = preparedLines.map((line) => {
+    const points = line.values
+      .map((point) => `${scaleX(point.index)},${scaleY(point.value)}`)
+      .join(" ")
+    return { ...line, points }
+  })
+
+  return {
+    lines: linesWithPoints,
+    minValue,
+    maxValue
+  }
 }
 
 export default function Library() {
@@ -207,6 +282,15 @@ export default function Library() {
   const runId = metrics?.run_id || metrics?.runId
   const startedAt = metrics?.started_at || metrics?.startedAt
   const epochsCount = Array.isArray(metrics?.epochs) ? metrics.epochs.length : 0
+
+  const chartSeries = useMemo(() => {
+    if (!Array.isArray(metrics?.epochs) || metrics.epochs.length === 0) return []
+    return METRIC_CHARTS.map((chart) => {
+      const chartData = buildChartData(metrics.epochs, chart.lines)
+      if (!chartData) return null
+      return { ...chart, ...chartData }
+    }).filter(Boolean)
+  }, [metrics])
 
   return (
     <div className="page library-page">
@@ -479,6 +563,53 @@ export default function Library() {
                   </>
                 )}
               </div>
+
+              {Array.isArray(metrics.epochs) && metrics.epochs.length > 0 && (
+                <div className="metrics-charts">
+                  {chartSeries.length > 0 ? (
+                    chartSeries.map((chart) => (
+                      <div className="metrics-chart" key={chart.title}>
+                        <div className="metrics-chart-header">
+                          <span className="metrics-chart-title">{chart.title}</span>
+                          <div className="metrics-chart-legend">
+                            {chart.lines.map((line) => (
+                              <span className="metrics-legend-item" key={line.key}>
+                                <span className={`metrics-legend-swatch ${line.className}`} />
+                                {line.label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <svg
+                          className="metrics-chart-svg"
+                          viewBox="0 0 100 40"
+                          role="img"
+                          aria-label={`${chart.title} chart`}
+                        >
+                          <g className="metrics-chart-grid">
+                            <line x1="0" y1="8" x2="100" y2="8" />
+                            <line x1="0" y1="20" x2="100" y2="20" />
+                            <line x1="0" y1="32" x2="100" y2="32" />
+                          </g>
+                          {chart.lines.map((line) => (
+                            <polyline
+                              key={line.key}
+                              className={`metrics-chart-line ${line.className}`}
+                              points={line.points}
+                            />
+                          ))}
+                        </svg>
+                        <div className="metrics-chart-range">
+                          <span>min {formatMetric(chart.minValue, 3)}</span>
+                          <span>max {formatMetric(chart.maxValue, 3)}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="metrics-empty">No chartable metrics available yet.</div>
+                  )}
+                </div>
+              )}
 
               {Array.isArray(metrics.epochs) && metrics.epochs.length > 0 ? (
                 <div className="metrics-table-wrapper">
