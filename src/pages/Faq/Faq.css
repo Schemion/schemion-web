@@ -1,0 +1,235 @@
+.faq-page {
+  gap: 26px;
+}
+
+.faq-hero {
+  background:
+    linear-gradient(130deg, rgba(31, 122, 234, 0.14), rgba(0, 179, 164, 0.12)),
+    var(--surface);
+  border: 1px solid rgba(31, 122, 234, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-hero h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 38px;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.faq-hero p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 980px;
+}
+
+.faq-badge {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1px solid rgba(31, 122, 234, 0.28);
+  background: rgba(31, 122, 234, 0.08);
+}
+
+.faq-language-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.faq-language-row span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.faq-language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.faq-language-switch button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.faq-language-switch button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.faq-language-switch button.active {
+  background: var(--text-main);
+  border-color: var(--text-main);
+  color: var(--surface);
+}
+
+.faq-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.faq-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-section-card h2,
+.faq-quickfix-card h2,
+.faq-flow-card h2,
+.faq-next-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.faq-questions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.faq-item {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faq-item h3 {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.faq-item p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.faq-example {
+  margin-top: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.faq-example span {
+  display: block;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-example pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.faq-muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.faq-quickfix-list {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.faq-quickfix-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-muted);
+  padding: 14px;
+}
+
+.faq-quickfix-item h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.faq-quickfix-item p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.faq-flow-card ol,
+.faq-next-card ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faq-flow-card li,
+.faq-next-card li {
+  color: var(--text-muted);
+}
+
+@media (max-width: 980px) {
+  .faq-questions-grid,
+  .faq-quickfix-list {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-hero h1 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .faq-language-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .faq-language-switch {
+    width: 100%;
+  }
+
+  .faq-language-switch button {
+    flex: 1;
+  }
+}

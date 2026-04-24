@@ -7,6 +7,7 @@ import Training from "../pages/Training/Training"
 import Tasks from "../pages/Tasks/Tasks"
 import Login from "../pages/Login/Login"
 import Library from "../pages/Library/Library"
+import Faq from "../pages/Faq/Faq"
 
 export default function Router({ token, onAuth }) {
     return (
@@ -18,6 +19,7 @@ export default function Router({ token, onAuth }) {
         <Route path="/training" element={token ? <Training/> : <Login onAuth={onAuth} />} />
         <Route path="/library" element={token ? <Library/> : <Login onAuth={onAuth} />} />
         <Route path="/tasks" element={token ? <Tasks/> : <Login onAuth={onAuth} />} />
+        <Route path="/faq" element={<Faq />} />
         </Routes>
     )
 }

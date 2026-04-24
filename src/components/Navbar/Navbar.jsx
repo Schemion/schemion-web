@@ -31,6 +31,9 @@ export default function Navbar({ token, onLogout, theme, onToggleTheme }) {
         <Link to="/tasks" className="nav-link">
           Tasks
         </Link>
+        <Link to="/faq" className="nav-link">
+          FAQ
+        </Link>
       </div>
       <div className="navbar-right">
         {onToggleTheme && (
