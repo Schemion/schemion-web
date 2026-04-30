@@ -1,5 +1,9 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, NavLink, useNavigate } from "react-router-dom"
 import "./Navbar.css"
+
+const navLinkClassName = ({ isActive }) => (
+  isActive ? "nav-link active" : "nav-link"
+)
 
 export default function Navbar({ token, onLogout, theme, onToggleTheme }) {
   const navigate = useNavigate()
@@ -19,21 +23,21 @@ export default function Navbar({ token, onLogout, theme, onToggleTheme }) {
         </Link>
       </div>
       <div className="navbar-center">
-        <Link to="/inference" className="nav-link">
+        <NavLink to="/inference" className={navLinkClassName}>
           Inference
-        </Link>
-        <Link to="/compare" className="nav-link">
+        </NavLink>
+        <NavLink to="/compare" className={navLinkClassName}>
           Compare
-        </Link>
-        <Link to="/training" className="nav-link">
+        </NavLink>
+        <NavLink to="/training" className={navLinkClassName}>
           Training
-        </Link>
-        <Link to="/tasks" className="nav-link">
+        </NavLink>
+        <NavLink to="/tasks" className={navLinkClassName}>
           Tasks
-        </Link>
-        <Link to="/faq" className="nav-link">
+        </NavLink>
+        <NavLink to="/faq" className={navLinkClassName}>
           FAQ
-        </Link>
+        </NavLink>
       </div>
       <div className="navbar-right">
         {onToggleTheme && (
@@ -41,8 +45,10 @@ export default function Navbar({ token, onLogout, theme, onToggleTheme }) {
             className="theme-toggle"
             onClick={onToggleTheme}
             aria-pressed={theme === "dark"}
+            title="Toggle theme"
           >
-            {theme === "dark" ? "Light mode" : "Dark mode"}
+            <span className="theme-toggle-knob" />
+            <span>{theme === "dark" ? "Light" : "Dark"}</span>
           </button>
         )}
         {token ? (

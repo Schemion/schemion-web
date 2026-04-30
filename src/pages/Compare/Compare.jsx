@@ -179,7 +179,7 @@ const stringifyJson = (value, limit = 6000) => {
     const json = JSON.stringify(value, null, 2)
     if (json.length <= limit) return json
     return `${json.slice(0, limit)}\n... trimmed (${json.length - limit} more chars)`
-  } catch (err) {
+  } catch {
     return String(value)
   }
 }
@@ -204,8 +204,20 @@ export default function Compare() {
   const loadedRef = useRef({ a: false, b: false })
 
   useEffect(() => {
-    loadModels()
+    let isMounted = true
+
+    getModels()
+      .then((data) => {
+        if (isMounted) {
+          setModels(data)
+        }
+      })
+      .catch((e) => {
+        console.error(e)
+      })
+
     return () => {
+      isMounted = false
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
@@ -219,15 +231,6 @@ export default function Compare() {
       }
     }
   }, [preview])
-
-  const loadModels = async () => {
-    try {
-      const data = await getModels()
-      setModels(data)
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   const handleFile = (selectedFile) => {
     if (preview) {

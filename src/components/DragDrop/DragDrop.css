@@ -3,17 +3,16 @@
   border: 1px dashed var(--border-strong);
   padding: 28px;
   text-align: center;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface-muted);
-  transition: border 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition: border 0.16s ease, background 0.16s ease;
   cursor: pointer;
   overflow: hidden;
 }
 
 .drop-zone.active {
   border-color: var(--accent);
-  background: rgba(31, 122, 234, 0.08);
-  transform: translateY(-1px);
+  background: rgba(94, 106, 210, 0.08);
 }
 
 .drop-zone-content {

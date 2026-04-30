@@ -1,43 +1,51 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --bg: #f5f6fb;
-  --bg-deep: #eef2ff;
-  --bg-glow-a: rgba(31, 122, 234, 0.18);
-  --bg-glow-b: rgba(0, 179, 164, 0.15);
+  --bg: #f7f8fa;
+  --bg-deep: #f1f3f6;
   --surface: #ffffff;
-  --surface-muted: #f7f8fe;
-  --text-main: #0f172a;
-  --text-muted: #5b6477;
-  --accent: #1f7aea;
-  --accent-strong: #00b3a4;
-  --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.18);
+  --surface-elevated: #ffffff;
+  --surface-muted: #f6f7f9;
+  --text-main: #171717;
+  --text-muted: #6b7280;
+  --accent: #5e6ad2;
+  --accent-strong: #4f46e5;
+  --solid-bg: #171717;
+  --solid-fg: #ffffff;
+  --solid-hover-bg: #5e6ad2;
+  --solid-hover-fg: #ffffff;
+  --border: rgba(23, 23, 23, 0.1);
+  --border-strong: rgba(23, 23, 23, 0.18);
   --success: #16a34a;
-  --danger: #ef4444;
-  --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
-  --navbar-bg: rgba(246, 248, 255, 0.85);
-  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Space Grotesk", "Manrope", system-ui, sans-serif;
+  --danger: #dc2626;
+  --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --navbar-bg: rgba(247, 248, 250, 0.88);
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b1124;
-  --bg-deep: #0f172a;
-  --bg-glow-a: rgba(59, 130, 246, 0.16);
-  --bg-glow-b: rgba(16, 185, 129, 0.12);
-  --surface: #111a31;
-  --surface-muted: #0d162b;
-  --text-main: #e2e8f0;
-  --text-muted: #94a3b8;
-  --accent: #60a5fa;
-  --accent-strong: #34d399;
-  --border: rgba(148, 163, 184, 0.18);
-  --border-strong: rgba(148, 163, 184, 0.32);
+  --bg: #08090b;
+  --bg-deep: #0d0f12;
+  --surface: #101114;
+  --surface-elevated: #111317;
+  --surface-muted: #17191f;
+  --text-main: #f4f4f5;
+  --text-muted: #9ca3af;
+  --accent: #8b8cf6;
+  --accent-strong: #a5b4fc;
+  --solid-bg: #f4f4f5;
+  --solid-fg: #08090b;
+  --solid-hover-bg: #8b8cf6;
+  --solid-hover-fg: #08090b;
+  --border: rgba(244, 244, 245, 0.1);
+  --border-strong: rgba(244, 244, 245, 0.18);
   --success: #22c55e;
   --danger: #f87171;
-  --shadow: 0 20px 60px rgba(2, 6, 23, 0.6);
-  --navbar-bg: rgba(10, 16, 32, 0.78);
+  --shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --navbar-bg: rgba(8, 9, 11, 0.86);
 }
 
 * {
@@ -50,8 +58,6 @@ body {
   font-family: var(--font-body);
   color: var(--text-main);
   background:
-    radial-gradient(1200px 600px at 10% -10%, var(--bg-glow-a), transparent 60%),
-    radial-gradient(900px 500px at 90% -20%, var(--bg-glow-b), transparent 60%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
   line-height: 1.6;
 }
@@ -80,7 +86,7 @@ textarea {
 input,
 select,
 textarea {
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   padding: 12px 14px;
   background: var(--surface);
@@ -93,9 +99,9 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(31, 122, 234, 0.18);
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.16);
 }
 
 ::selection {
-  background: rgba(31, 122, 234, 0.2);
+  background: rgba(94, 106, 210, 0.2);
 }

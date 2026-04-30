@@ -73,7 +73,7 @@ const parseMetrics = (payload) => {
   if (typeof payload === "string") {
     try {
       return JSON.parse(payload)
-    } catch (err) {
+    } catch {
       return { raw: payload }
     }
   }

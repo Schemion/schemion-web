@@ -23,7 +23,21 @@ export default function Inference() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
-    loadModels()
+    let isMounted = true
+
+    getModels()
+      .then((data) => {
+        if (isMounted) {
+          setModels(data)
+        }
+      })
+      .catch((e) => {
+        console.error(e)
+      })
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   useEffect(() => {
@@ -41,15 +55,6 @@ export default function Inference() {
       }
     }
   }, [preview])
-
-  const loadModels = async () => {
-    try {
-      const data = await getModels()
-      setModels(data)
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   const handleFile = (selectedFile) => {
     if (preview) {

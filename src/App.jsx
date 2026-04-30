@@ -2,10 +2,22 @@ import { useEffect, useState } from "react"
 import { BrowserRouter } from "react-router-dom"
 import Router from "./router/router"
 import Navbar from "./components/Navbar/Navbar"
+import { refreshSession } from "./api/axios"
+import {
+  AUTH_EXPIRED_EVENT,
+  clearSession,
+  extractSessionTokens,
+  getAccessToken,
+  getTokenExpiryMs,
+  isTokenExpired,
+  setSession,
+  TOKEN_REFRESH_LEEWAY_MS
+} from "./api/session"
 import "./App.css"
 
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem("token"))
+  const [token, setToken] = useState(() => getAccessToken())
+  const [sessionExpired, setSessionExpired] = useState(false)
   const [theme, setTheme] = useState(() => {
     const stored = localStorage.getItem("theme")
     if (stored === "light" || stored === "dark") return stored
@@ -15,13 +27,22 @@ function App() {
     return "light"
   })
 
-  const handleAuthChange = (nextToken) => {
-    if (nextToken) {
-      localStorage.setItem("token", nextToken)
-      setToken(nextToken)
+  const handleAuthChange = (session) => {
+    if (session) {
+      const tokens = typeof session === "string"
+        ? { accessToken: session, refreshToken: null }
+        : extractSessionTokens(session)
+
+      if (tokens.accessToken) {
+        setSession(tokens)
+        setToken(tokens.accessToken)
+        setSessionExpired(false)
+      }
+
       return
     }
-    localStorage.removeItem("token")
+
+    clearSession()
     setToken(null)
   }
 
@@ -29,6 +50,51 @@ function App() {
     document.documentElement.setAttribute("data-theme", theme)
     localStorage.setItem("theme", theme)
   }, [theme])
+
+  useEffect(() => {
+    const expireSession = () => {
+      clearSession()
+      setToken(null)
+      setSessionExpired(true)
+    }
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, expireSession)
+
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, expireSession)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!token) return undefined
+
+    const refreshOrExpire = async () => {
+      try {
+        const nextToken = await refreshSession()
+        setToken(nextToken)
+        setSessionExpired(false)
+      } catch {
+        clearSession()
+        setToken(null)
+        setSessionExpired(true)
+      }
+    }
+
+    if (isTokenExpired(token)) {
+      refreshOrExpire()
+      return undefined
+    }
+
+    const expiryMs = getTokenExpiryMs(token)
+    if (!expiryMs) return undefined
+
+    const delay = Math.max(expiryMs - Date.now() - TOKEN_REFRESH_LEEWAY_MS, 0)
+    const timerId = window.setTimeout(refreshOrExpire, delay)
+
+    return () => {
+      window.clearTimeout(timerId)
+    }
+  }, [token])
 
   return (
     <BrowserRouter>
@@ -39,7 +105,11 @@ function App() {
           theme={theme}
           onToggleTheme={() => setTheme(prev => (prev === "dark" ? "light" : "dark"))}
         />
-        <Router token={token} onAuth={handleAuthChange} />
+        <Router
+          token={token}
+          onAuth={handleAuthChange}
+          sessionExpired={sessionExpired}
+        />
       </div>
     </BrowserRouter>
   )

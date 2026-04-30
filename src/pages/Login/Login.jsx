@@ -1,16 +1,20 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { loginRequest, registerRequest } from "../../api/auth"
 import "./Login.css"
 
 export default function Login({ onAuth }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isRegister, setIsRegister] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+
+  const fromPath = location.state?.from?.pathname || "/"
+  const sessionExpired = Boolean(location.state?.sessionExpired)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,14 +29,13 @@ export default function Login({ onAuth }) {
 
       try {
         const res = await registerRequest(email, password)
-        const token = res?.data?.access_token
+        const token = res?.data?.access_token || res?.data?.accessToken || res?.data?.token
+
         if (token) {
           if (onAuth) {
-            onAuth(token)
-          } else {
-            localStorage.setItem("token", token)
+            onAuth(res.data)
           }
-          navigate("/")
+          navigate(fromPath, { replace: true })
           return
         }
 
@@ -40,7 +43,7 @@ export default function Login({ onAuth }) {
         setIsRegister(false)
         setConfirmPassword("")
         return
-      } catch (err) {
+      } catch {
         setError("Could not create account")
         return
       }
@@ -48,13 +51,18 @@ export default function Login({ onAuth }) {
 
     try {
       const res = await loginRequest(email, password)
-      if (onAuth) {
-        onAuth(res.data.access_token)
-      } else {
-        localStorage.setItem("token", res.data.access_token)
+      const token = res?.data?.access_token || res?.data?.accessToken || res?.data?.token
+
+      if (!token) {
+        setError("Login response does not include a token")
+        return
       }
-      navigate("/")
-    } catch (err) {
+
+      if (onAuth) {
+        onAuth(res.data)
+      }
+      navigate(fromPath, { replace: true })
+    } catch {
       setError("Invalid email or password")
     }
   }
@@ -72,7 +80,9 @@ export default function Login({ onAuth }) {
         <div className="login-header">
           <h1>{isRegister ? "Create account" : "Welcome back"}</h1>
           <p>
-            {isRegister
+            {sessionExpired && !isRegister
+              ? "Your session has expired. Sign in again to continue."
+              : isRegister
               ? "Register to manage models, tasks, and inference runs."
               : "Sign in to manage models, tasks, and inference runs."}
           </p>

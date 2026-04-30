@@ -22,7 +22,7 @@
 
 .compare-error {
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid rgba(239, 68, 68, 0.25);
   background: rgba(239, 68, 68, 0.08);
   color: var(--danger);
@@ -34,7 +34,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-muted);
 }
@@ -103,7 +103,7 @@
 
 .compare-preview {
   min-height: 260px;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px dashed var(--border-strong);
   background: var(--surface-muted);
   padding: 18px;
@@ -113,7 +113,7 @@
 }
 
 .compare-preview img {
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .compare-waiting {
@@ -155,7 +155,7 @@
 
 .compare-json-card {
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-muted);
   display: flex;
@@ -194,7 +194,7 @@
 
 .compare-json-table {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -248,7 +248,7 @@
 
 .compare-json-panel {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--surface-muted);
 }

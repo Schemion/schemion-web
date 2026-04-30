@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom"
+import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 
 import Home from "../pages/Home/Home"
 import Inference from "../pages/Inference/Inference"
@@ -9,17 +9,42 @@ import Login from "../pages/Login/Login"
 import Library from "../pages/Library/Library"
 import Faq from "../pages/Faq/Faq"
 
-export default function Router({ token, onAuth }) {
+function ProtectedRoute({ token, sessionExpired, children }) {
+  const location = useLocation()
+
+  if (!token) {
     return (
-        <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login onAuth={onAuth} />} />
-        <Route path="/inference" element={token ? <Inference/> : <Login onAuth={onAuth} />} />
-        <Route path="/compare" element={token ? <Compare/> : <Login onAuth={onAuth} />} />
-        <Route path="/training" element={token ? <Training/> : <Login onAuth={onAuth} />} />
-        <Route path="/library" element={token ? <Library/> : <Login onAuth={onAuth} />} />
-        <Route path="/tasks" element={token ? <Tasks/> : <Login onAuth={onAuth} />} />
-        <Route path="/faq" element={<Faq />} />
-        </Routes>
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location,
+          sessionExpired
+        }}
+      />
     )
+  }
+
+  return children
+}
+
+export default function Router({ token, onAuth, sessionExpired }) {
+  const protectedPage = (page) => (
+    <ProtectedRoute token={token} sessionExpired={sessionExpired}>
+      {page}
+    </ProtectedRoute>
+  )
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login onAuth={onAuth} />} />
+      <Route path="/inference" element={protectedPage(<Inference />)} />
+      <Route path="/compare" element={protectedPage(<Compare />)} />
+      <Route path="/training" element={protectedPage(<Training />)} />
+      <Route path="/library" element={protectedPage(<Library />)} />
+      <Route path="/tasks" element={protectedPage(<Tasks />)} />
+      <Route path="/faq" element={<Faq />} />
+    </Routes>
+  )
 }

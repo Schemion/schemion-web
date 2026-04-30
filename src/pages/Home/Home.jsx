@@ -4,7 +4,7 @@ import "./Home.css"
 export default function Home() {
   return (
     <div className="page home-page">
-      <section className="home-hero card">
+      <section className="home-hero">
         <span className="home-eyebrow">Schemion Platform</span>
         <h1>Train, compare, and deploy object detection models faster.</h1>
         <p>

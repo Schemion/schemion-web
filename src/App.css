@@ -8,10 +8,11 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 32px 24px 72px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  animation: pageEnter 0.16s ease both;
 }
 
 .page-header {
@@ -22,9 +23,10 @@
 
 .page-header h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: 30px;
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
+  line-height: 1.2;
 }
 
 .page-header p {
@@ -34,11 +36,21 @@
 }
 
 .card {
-  background: var(--surface);
+  position: relative;
+  background: var(--surface-elevated);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 8px;
   padding: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .card.soft {
@@ -62,24 +74,31 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 18px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1px solid transparent;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   text-decoration: none;
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
-  color: white;
-  box-shadow: 0 12px 24px rgba(31, 122, 234, 0.2);
+  background: var(--solid-bg);
+  color: var(--solid-fg);
+  border-color: var(--solid-bg);
+  box-shadow: none;
 }
 
 .btn.primary:hover {
-  transform: translateY(-1px);
+  background: var(--solid-hover-bg);
+  color: var(--solid-hover-fg);
+  border-color: var(--solid-hover-bg);
+  box-shadow: none;
 }
 
 .btn.ghost {
@@ -89,8 +108,9 @@
 }
 
 .btn.ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--surface-muted);
+  color: var(--text-main);
 }
 
 .btn:disabled {
@@ -132,8 +152,8 @@
 
 .status-pill.running {
   color: var(--accent);
-  border-color: rgba(31, 122, 234, 0.3);
-  background: rgba(31, 122, 234, 0.08);
+  border-color: rgba(94, 106, 210, 0.28);
+  background: rgba(94, 106, 210, 0.08);
 }
 
 .status-pill.success {
@@ -155,5 +175,28 @@
 
   .grid-3 {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+
+  .card,
+  .btn {
+    transition: none;
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
