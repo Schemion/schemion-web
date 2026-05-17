@@ -7,9 +7,17 @@ export const loginRequest = (email, password) => {
   })
 }
 
-export const registerRequest = (email, password) => {
+export const registerRequest = (email, password, role = "user") => {
   return api.post("/auth/register", {
     email,
-    password
+    password,
+    role
+  })
+}
+
+export const confirmRegisterRequest = (email, code) => {
+  return api.post("/auth/register/confirm", {
+    email,
+    code
   })
 }

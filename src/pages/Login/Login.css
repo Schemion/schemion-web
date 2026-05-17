@@ -40,6 +40,12 @@
   margin: 0;
 }
 
+.login-hint {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: -8px 0 0;
+}
+
 .login-switch {
   display: flex;
   align-items: center;
@@ -59,4 +65,32 @@
 
 .login-switch button:hover {
   color: var(--accent-strong);
+}
+
+.confirmation-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.confirmation-actions .btn {
+  flex: 1 1 190px;
+}
+
+.confirmation-actions button:not(.btn) {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+}
+
+.confirmation-actions button:not(.btn):hover {
+  color: var(--accent-strong);
+}
+
+.confirmation-actions button:disabled {
+  cursor: not-allowed;
 }
